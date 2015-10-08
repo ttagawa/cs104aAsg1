@@ -11,6 +11,10 @@ using namespace std;
 #include <stdlib.h>
 #include <string.h>
 #include <wait.h>
+#include <fstream>
+#include <unistd.h>
+#include <getopt.h>
+
 
 #include "auxlib.h"
 #include "stringset.h"
@@ -58,9 +62,22 @@ void cpplines (FILE* pipe, char* filename) {
 }
 
 int main (int argc, char** argv) {
+  char c = 0;
+while((c = getopt (argc,argv,"@:D:ly"))!=-1){
+  switch(c){
+    case '@': set_debugflags(optarg);printf("%s",optarg);break;
+    case 'D':printf("%s",optarg);break;
+    case 'l':printf("lex debugging on");break;
+    case 'y':printf("yak debugging on");break;
+  }
+
+}
+
+
    set_execname (argv[0]);
+  char* filename = NULL;
    for (int argi = 1; argi < argc; ++argi) {
-      char* filename = argv[argi];
+      filename = argv[argi];
       string command = CPP + " " + filename;
     //  printf ("command=\"%s\"\n", command.c_str());
       FILE* pipe = popen (command.c_str(), "r");
@@ -72,5 +89,10 @@ int main (int argc, char** argv) {
          eprint_status (command.c_str(), pclose_rc);
       }
    }
+   filename= strcat(filename,".str");
+   ofstream file(filename);
+   dump_stringset(file);
+   printf("%s",filename);
+   printf("%d", is_debugflag('@'));
    return get_exitstatus();
 }
