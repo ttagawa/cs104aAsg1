@@ -16,7 +16,7 @@ spotless : clean
 	- rm teststring Listing.ps Listing.pdf test?.out test?.err
 
 clean :
-	-rm stringset.o main.o auxlib.o cppstrtok.o
+	-rm stringset.o auxlib.o cppstrtok.o
 
 test : teststring
 	${GRIND} teststring * * >test1.out 2>test1.err

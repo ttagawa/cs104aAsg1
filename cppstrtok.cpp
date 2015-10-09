@@ -14,12 +14,13 @@ using namespace std;
 #include <fstream>
 #include <unistd.h>
 #include <getopt.h>
+#include <iostream>
 
 
 #include "auxlib.h"
 #include "stringset.h"
 
-const string CPP = "/usr/bin/cpp";
+string CPP = "/usr/bin/cpp";
 const size_t LINESIZE = 1024;
 // Chomp the last character from a buffer if it is delim.
 void chomp (char* string, char delim) {
@@ -53,30 +54,39 @@ void cpplines (FILE* pipe, char* filename) {
          bufptr = NULL;
          if (token == NULL) break;
         // printf ("token %d.%d: [%s]\n",linenr, tokenct, token);
-        const string* st = intern_stringset(token);
-        cout<<st;
+         intern_stringset(token);
       }
       ++linenr;
    }
-   dump_stringset(cout);
+  // dump_stringset(cout);
 }
 
 int main (int argc, char** argv) {
-  char c = 0;
-while((c = getopt (argc,argv,"@:D:ly"))!=-1){
+  char c;
+  //string s = NULL;
+while((c = getopt (argc,argv,"ly@:D:"))!=-1){
+  printf("This is c:%c\n",c);
   switch(c){
-    case '@': set_debugflags(optarg);printf("%s",optarg);break;
-    case 'D':printf("%s",optarg);break;
-    case 'l':printf("lex debugging on");break;
-    case 'y':printf("yak debugging on");break;
+    case 'l':printf("lex debugging on");
+             //yy_flex_debug=1;
+             break;
+    case 'y':printf("yak debugging on");
+            //yydebug =1;
+            break;
+    case '@':set_debugflags(optarg);break;
+    case 'D':CPP+=" -D"+string(optarg);break;
+    case '?':fprintf(stderr, "Not proper option");
+             return get_exitstatus();
+    default:break;
   }
-
 }
+
+
 
 
    set_execname (argv[0]);
   char* filename = NULL;
-   for (int argi = 1; argi < argc; ++argi) {
+   for (int argi=1; argi < argc; ++argi) {
       filename = argv[argi];
       string command = CPP + " " + filename;
     //  printf ("command=\"%s\"\n", command.c_str());
@@ -89,10 +99,13 @@ while((c = getopt (argc,argv,"@:D:ly"))!=-1){
          eprint_status (command.c_str(), pclose_rc);
       }
    }
+   filename  = basename(filename);
    filename= strcat(filename,".str");
    ofstream file(filename);
    dump_stringset(file);
-   printf("%s",filename);
-   printf("%d", is_debugflag('@'));
-   return get_exitstatus();
+  // printf("%s",filename);
+  // printf("%d", is_debugflag('@'));
+   file.close();
+  // return get_exitstatus();
+  return 1;
 }
