@@ -64,7 +64,9 @@ void cpplines (FILE* pipe, char* filename) {
 int main (int argc, char** argv) {
   char c;
   //string s = NULL;
+  int argi=1;
 while((c = getopt (argc,argv,"ly@:D:"))!=-1){
+  argi++;
   printf("This is c:%c\n",c);
   switch(c){
     case 'l':printf("lex debugging on");
@@ -86,9 +88,9 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
 
    set_execname (argv[0]);
   char* filename = NULL;
-   for (int argi=1; argi < argc; ++argi) {
       filename = argv[argi];
       string command = CPP + " " + filename;
+      printf("Popen debug:%s\n",command.c_str());
     //  printf ("command=\"%s\"\n", command.c_str());
       FILE* pipe = popen (command.c_str(), "r");
       if (pipe == NULL) {
@@ -98,7 +100,6 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
          int pclose_rc = pclose (pipe);
          eprint_status (command.c_str(), pclose_rc);
       }
-   }
    filename  = basename(filename);
    filename= strcat(filename,".str");
    ofstream file(filename);
