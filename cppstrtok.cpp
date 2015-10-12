@@ -39,18 +39,21 @@ void cpplines (FILE* pipe, char* filename) {
       char* fgets_rc = fgets (buffer, LINESIZE, pipe);
       if (fgets_rc == NULL) break;
       chomp (buffer, '\n');
+      int sscanf_rc = sscanf (buffer, "# %d \"%[^\"]\"",
+                              &linenr, filename);
+      if (sscanf_rc == 2) {
+         continue;
+      }
       char* savepos = NULL;
       char* bufptr = buffer;
       for (int tokenct = 1;; ++tokenct) {
          char* token = strtok_r (bufptr, " \t\n", &savepos);
          bufptr = NULL;
          if (token == NULL) break;
-        // printf ("token %d.%d: [%s]\n",linenr, tokenct, token);
          intern_stringset(token);
       }
       ++linenr;
    }
-  // dump_stringset(cout);
 }
 
 int main (int argc, char** argv) {
