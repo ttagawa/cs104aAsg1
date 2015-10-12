@@ -39,14 +39,6 @@ void cpplines (FILE* pipe, char* filename) {
       char* fgets_rc = fgets (buffer, LINESIZE, pipe);
       if (fgets_rc == NULL) break;
       chomp (buffer, '\n');
-      //printf ("%s:line %d: [%s]\n", filename, linenr, buffer);
-      // http://gcc.gnu.org/onlinedocs/cpp/Preprocessor-Output.html
-    //  int sscanf_rc = sscanf (buffer, "# %d \"%[^\"]\"",
-                  //            &linenr, filename);
-      //if (sscanf_rc == 2) {
-         //printf ("DIRECTIVE: line %d file \"%s\"\n", linenr, filename);
-        // continue;
-      //}
       char* savepos = NULL;
       char* bufptr = buffer;
       for (int tokenct = 1;; ++tokenct) {
@@ -76,7 +68,7 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
             break;
     case '@':set_debugflags(optarg);break;
     case 'D':CPP+=" -D"+string(optarg);break;
-    case '?':fprintf(stderr, "Not proper option");
+    case '?':errprintf("Not proper option");
              return get_exitstatus();
     default:break;
   }
@@ -86,8 +78,6 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
   char* filename = NULL;
       filename = argv[argi];
       string command = CPP + " " + filename;
-    //  printf("Popen debug:%s\n",command.c_str());
-    //  printf ("command=\"%s\"\n", command.c_str());
       FILE* pipe = popen (command.c_str(), "r");
       if (pipe == NULL) {
          syserrprintf (command.c_str());
@@ -101,22 +91,16 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
    size_t pos = filename1.find('.');
    string base = filename1.substr(0,pos);
    string suffix = filename1.substr(pos);
-  // printf("base:%s\n",base.c_str());
-  // printf("suffix:%s\n",suffix.c_str());
    if(suffix.compare(".oc")!=0){
      errprintf("please enter a .oc file\n");
      return get_exitstatus();
    }
-   char* final = new char[base.length() + 1];
+   char* final = new char[base.length() + 5];
    strcpy(final,base.c_str());
    strcat(final,".str");
-  // printf("final name:%s\n",final);
    ofstream file(final);
    dump_stringset(file);
-  // printf("%s",filename);
-  // printf("%d", is_debugflag('@'));
    file.close();
+   delete [] final;
    return get_exitstatus();
-
-  //return 1;
 }

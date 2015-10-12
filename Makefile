@@ -1,6 +1,8 @@
 GPP   = g++ -g -O0 -Wall -Wextra -std=gnu++11
 GRIND = valgrind --leak-check=full --show-reachable=yes
-
+DEPSFILE = Makefile.deps
+MKDEPS = g++ -MM -std=gnu++11
+CSRC = stringset.cpp auxlib.cpp cppstrtok.cpp
 all : oc
 
 oc : stringset.o auxlib.o cppstrtok.o
@@ -27,7 +29,13 @@ test : oc
 lis : test
 	mkpspdf Listing.ps stringset.h stringset.cpp main.cpp \
 	        Makefile test1.out test1.err test2.out test2.err
-deps:cppstrtok.o stringset.o auxlib.o
+deps : ${CSRC}
+	@ echo "# ${DEPSFILE} created 'date' by ${MAKE}" >${DEPSFILE}
+	${MKDEPS} ${CSRC} >>${DEPSFILE}
+
+${DEPSFILE} :
+	@ touch ${DEPSFILE}
+	${MAKE} --no-print-directory deps
 # Depencencies.
 cppstrtok.o: cppstrtok.cpp stringset.h auxlib.h
 stringset.o: stringset.cpp stringset.h
