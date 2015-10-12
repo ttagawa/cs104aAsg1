@@ -101,8 +101,8 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
    size_t pos = filename1.find('.');
    string base = filename1.substr(0,pos);
    string suffix = filename1.substr(pos);
-   printf("base:%s\n",base.c_str());
-   printf("suffix:%s\n",suffix.c_str());
+  // printf("base:%s\n",base.c_str());
+  // printf("suffix:%s\n",suffix.c_str());
    if(suffix.compare(".oc")!=0){
      errprintf("please enter a .oc file\n");
      return get_exitstatus();
@@ -110,7 +110,7 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
    char* final = new char[base.length() + 1];
    strcpy(final,base.c_str());
    strcat(final,".str");
-   printf("final name:%s\n",final);
+  // printf("final name:%s\n",final);
    ofstream file(final);
    dump_stringset(file);
   // printf("%s",filename);

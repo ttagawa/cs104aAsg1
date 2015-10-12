@@ -10,13 +10,14 @@ oc : stringset.o auxlib.o cppstrtok.o
 	${GPP} -c $<
 
 ci :
-	cid + Makefile stringset.h stringset.cpp main.cpp
+	git add -u
+	git commit
 
 spotless : clean
-	- rm *.str oc
+	- rm oc
 
 clean :
-	-rm stringset.o auxlib.o cppstrtok.o
+	-rm stringset.o auxlib.o cppstrtok.o *.str
 
 test : oc
 	${GRIND} oc * * >test1.out 2>test1.err
