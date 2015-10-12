@@ -67,7 +67,6 @@ int main (int argc, char** argv) {
   int argi=1;
 while((c = getopt (argc,argv,"ly@:D:"))!=-1){
   argi++;
-  printf("This is c:%c\n",c);
   switch(c){
     case 'l':printf("lex debugging on");
              //yy_flex_debug=1;
@@ -83,14 +82,11 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
   }
 }
 
-
-
-
    set_execname (argv[0]);
   char* filename = NULL;
       filename = argv[argi];
       string command = CPP + " " + filename;
-      printf("Popen debug:%s\n",command.c_str());
+    //  printf("Popen debug:%s\n",command.c_str());
     //  printf ("command=\"%s\"\n", command.c_str());
       FILE* pipe = popen (command.c_str(), "r");
       if (pipe == NULL) {
@@ -101,12 +97,26 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
          eprint_status (command.c_str(), pclose_rc);
       }
    filename  = basename(filename);
-   filename= strcat(filename,".str");
-   ofstream file(filename);
+   string filename1(filename);
+   size_t pos = filename1.find('.');
+   string base = filename1.substr(0,pos);
+   string suffix = filename1.substr(pos);
+   printf("base:%s\n",base.c_str());
+   printf("suffix:%s\n",suffix.c_str());
+   if(suffix.compare(".oc")!=0){
+     errprintf("please enter a .oc file\n");
+     return get_exitstatus();
+   }
+   char* final = new char[base.length() + 1];
+   strcpy(final,base.c_str());
+   strcat(final,".str");
+   printf("final name:%s\n",final);
+   ofstream file(final);
    dump_stringset(file);
   // printf("%s",filename);
   // printf("%d", is_debugflag('@'));
    file.close();
-  // return get_exitstatus();
-  return 1;
+   return get_exitstatus();
+
+  //return 1;
 }
