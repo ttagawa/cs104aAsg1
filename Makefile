@@ -20,7 +20,7 @@ LEXCPP    = yylex.cpp
 PARSECPP  = yyparse.cpp
 CGENS     = ${LEXCPP} ${PARSECPP}
 ALLGENS   = ${LEXHDR} ${PARSEHDR} ${CGENS}
-EXECBIN   = zexprsm
+EXECBIN   = oc
 ALLCSRC   = ${CPPSRC} ${CGENS}
 OBJECTS   = ${ALLCSRC:.cpp=.o}
 LEXOUT    = yylex.output
@@ -83,7 +83,7 @@ tests : ${EXECBIN}
 
 %.out %.err : %.in ${EXECBIN}
 	${GRIND} --log-file=$*.log ${EXECTEST} $< 1>$*.out 2>$*.err; \
-	echo EXIT STATUS = $$? >>$*.log
+#	echo EXIT STATUS = $$? >>$*.log
 
 again :
 	gmake --no-print-directory spotless deps ci all lis

@@ -64,8 +64,7 @@ int main (int argc, char** argv) {
 while((c = getopt (argc,argv,"ly@:D:"))!=-1){
   argi++;
   switch(c){
-    case 'l':printf("lex debugging on");
-             yy_flex_debug=1;
+    case 'l':yy_flex_debug=1;
              break;
     case 'y':printf("yak debugging on");
             //yydebug =1;
@@ -80,31 +79,41 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
 
    set_execname (argv[0]);
   char* filename = NULL;
-      filename = argv[argi];
-      string command = CPP + " " + filename;
-      FILE* pipe = popen (command.c_str(), "r");
-      if (pipe == NULL) {
+  FILE* file_tok = NULL;
+  filename = argv[argi];
+  string command = CPP + " " + filename;
+  filename  = basename(filename);
+  string filename1(filename);
+  size_t pos = filename1.find('.');
+  string base = filename1.substr(0,pos);
+  string suffix = filename1.substr(pos);
+  char* final_str = new char[base.length() + 5];
+  char* final_tok = new char[base.length() + 5];
+  strcpy(final_str,base.c_str());
+  strcat(final_str,".str");
+  strcpy(final_tok,base.c_str());
+  strcat(final_tok,".tok");
+  ofstream file_str(final_str);
+    //  ofstream file_tok(final_tok);
+      yyin = popen (command.c_str(), "r");
+      if (yyin == NULL) {
          syserrprintf (command.c_str());
       }else {
-         cpplines (pipe, filename);
-         int pclose_rc = pclose (pipe);
-         eprint_status (command.c_str(), pclose_rc);
+        file_tok = fopen(final_tok, "w");
+        int tCount=0;
+        while((tCount = yylex())!= YYEOF){
+            yyprint(file_tok,tCount,yylval);
+        }
+        fclose(file_tok);
       }
-   filename  = basename(filename);
-   string filename1(filename);
-   size_t pos = filename1.find('.');
-   string base = filename1.substr(0,pos);
-   string suffix = filename1.substr(pos);
    if(suffix.compare(".oc")!=0){
      errprintf("please enter a .oc file\n");
      return get_exitstatus();
    }
-   char* final = new char[base.length() + 5];
-   strcpy(final,base.c_str());
-   strcat(final,".str");
-   ofstream file(final);
-   dump_stringset(file);
-   file.close();
-   delete [] final;
+   dump_stringset(file_str);
+   file_str.close();
+  // file_tok.close();
+   delete [] final_str;
+   delete [] final_tok;
    return get_exitstatus();
 }
