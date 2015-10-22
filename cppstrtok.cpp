@@ -19,6 +19,7 @@ using namespace std;
 
 #include "auxlib.h"
 #include "stringset.h"
+#include "lyutils.h"
 
 string CPP = "/usr/bin/cpp";
 const size_t LINESIZE = 1024;
@@ -64,7 +65,7 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
   argi++;
   switch(c){
     case 'l':printf("lex debugging on");
-             //yy_flex_debug=1;
+             yy_flex_debug=1;
              break;
     case 'y':printf("yak debugging on");
             //yydebug =1;
