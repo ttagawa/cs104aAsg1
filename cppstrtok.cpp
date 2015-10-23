@@ -58,6 +58,8 @@ void cpplines (FILE* pipe, char* filename) {
 }
 
 int main (int argc, char** argv) {
+  yy_flex_debug=0;
+  yydebug=0;
   char c;
   //string s = NULL;
   int argi=1;
