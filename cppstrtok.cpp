@@ -20,7 +20,7 @@ using namespace std;
 #include "auxlib.h"
 #include "stringset.h"
 #include "lyutils.h"
-
+FILE* file_tok;
 string CPP = "/usr/bin/cpp";
 const size_t LINESIZE = 1024;
 // Chomp the last character from a buffer if it is delim.
@@ -81,7 +81,6 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
 
    set_execname (argv[0]);
   char* filename = NULL;
-  FILE* file_tok = NULL;
   filename = argv[argi];
   string command = CPP + " " + filename;
   filename  = basename(filename);

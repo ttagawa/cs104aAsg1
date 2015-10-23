@@ -89,7 +89,8 @@ void lexer_include (void) {
       errprintf ("%: %d: [%s]: invalid directive, ignored\n",
                  scan_rc, yytext);
    }else {
-      //printf (";# %d \"%s\"\n", linenr, filename);
+      //printf ("# %d \"%s\"\n", linenr, filename);
+      fprintf (file_tok,"# %d \"%s\"\n", linenr, filename);
       lexer_newfilename (filename);
       scan_linenr = linenr - 1;
       DEBUGF ('m', "filename=%s, scan_linenr=%d\n",
