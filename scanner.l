@@ -4,7 +4,7 @@
 #include "auxlib.h"
 #include "lyutils.h"
 
-
+#define YY_USER_ACTION  { lexer_useraction(); }
 
 
 %}
