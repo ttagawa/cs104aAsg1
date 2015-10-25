@@ -70,6 +70,7 @@ int yylval_token (int symbol) {
    int offset = scan_offset - yyleng;
    yylval = new astree (symbol, included_filenames.size() - 1,
                         scan_linenr, offset, yytext);
+   yyprint(file_tok,symbol,yylval);
    return symbol;
 }
 

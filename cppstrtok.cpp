@@ -101,9 +101,9 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
          syserrprintf (command.c_str());
       }else {
         file_tok = fopen(final_tok, "w");
-        int tCount=0;
-        while((tCount = yylex())!= YYEOF){
-            yyprint(file_tok,tCount,yylval);
+      //  int tCount=0;
+        while(yylex()!= YYEOF){
+          //  yyprint(file_tok,tCount,yylval);
         }
         fclose(file_tok);
       }
@@ -116,5 +116,6 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
   // file_tok.close();
    delete [] final_str;
    delete [] final_tok;
+   yylex_destroy();
    return get_exitstatus();
 }
