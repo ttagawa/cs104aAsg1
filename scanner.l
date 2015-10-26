@@ -25,10 +25,10 @@ NUMBER          ({DIGIT}+)
 NOTNUMBER       ({MANTISSA}[Ee][+-]?)
 IDENT           ({LETTER}({LETTER}|{DIGIT})*)
 NOTIDENT        ({DIGIT}{LETTER}+)
-NOTCHAR         (’([^\\’\n]|\\[\\’"0nt]))
-NOTSTRING       (\"([^\\"\n]|\\[\\’"0nt])*)
-CHARCONS        (’([^\\’\n]|\\[\\’"0nt])’)
-STRINGCONS      (\"([^\\"\n]|\\[\\’"0nt])*\")
+NOTCHAR         (''([^\\'\n]|\\[\\'"0nt]))
+NOTSTRING       (\"([^\\"\n]|\\[\\'"0nt])*)
+CHARCONS        ('([^\\'\n]|\\[\\'"0nt])')
+STRINGCONS      (\"([^\\"\n]|\\[\\'"0nt])*\")
 
 
 %%
@@ -82,9 +82,12 @@ STRINGCONS      (\"([^\\"\n]|\\[\\’"0nt])*\")
 "!"             { return yylval_token ('!'); }
 
 
-{NOTIDENT}     { lexer_badtoken (yytext); return yylval_token (TOK_IDENT); }
-{NOTCHAR}       { lexer_badtoken(yytext); return yylval_token (TOK_CHARCON); }
-{NOTSTRING}     { lexer_badtoken(yytext); return yylval_token(TOK_STRINGCON); }
+{NOTIDENT}     { lexer_badtoken (yytext);
+                return yylval_token (TOK_IDENT); }
+{NOTCHAR}       { lexer_badtoken(yytext);
+                  return yylval_token (TOK_CHARCON); }
+{NOTSTRING}     { lexer_badtoken(yytext);
+                  return yylval_token(TOK_STRINGCON); }
 .               { lexer_badchar (*yytext); }
 
 %%

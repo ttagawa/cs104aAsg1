@@ -60,11 +60,9 @@ void cpplines (FILE* pipe, char* filename) {
 int main (int argc, char** argv) {
   yy_flex_debug=0;
   yydebug=0;
-  char c;
+  int c;
   //string s = NULL;
-  int argi=1;
 while((c = getopt (argc,argv,"ly@:D:"))!=-1){
-  argi++;
   switch(c){
     case 'l':yy_flex_debug=1;
              break;
@@ -75,13 +73,14 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
     case 'D':CPP+=" -D"+string(optarg);break;
     case '?':errprintf("Not proper option");
              return get_exitstatus();
+             break;
     default:break;
   }
 }
 
    set_execname (argv[0]);
   char* filename = NULL;
-  filename = argv[argi];
+  filename = argv[optind];
   string command = CPP + " " + filename;
   filename  = basename(filename);
   string filename1(filename);
@@ -103,7 +102,6 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
         file_tok = fopen(final_tok, "w");
         while(yylex()!= YYEOF){
         }
-        fclose(file_tok);
       }
    if(suffix.compare(".oc")!=0){
      errprintf("please enter a .oc file\n");
@@ -111,7 +109,7 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
    }
    dump_stringset(file_str);
    file_str.close();
-  // file_tok.close();
+   fclose(file_tok);
    delete [] final_str;
    delete [] final_tok;
    yylex_destroy();
