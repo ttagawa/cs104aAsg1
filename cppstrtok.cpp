@@ -66,8 +66,7 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
   switch(c){
     case 'l':yy_flex_debug=1;
              break;
-    case 'y':printf("yak debugging on");
-            //yydebug =1;
+    case 'y':yydebug=1;
             break;
     case '@':set_debugflags(optarg);break;
     case 'D':CPP+=" -D"+string(optarg);break;
