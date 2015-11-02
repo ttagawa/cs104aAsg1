@@ -99,8 +99,7 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
          syserrprintf (command.c_str());
       }else {
         file_tok = fopen(final_tok, "w");
-        while(yylex()!= YYEOF){
-        }
+        yyparse();
       }
    if(suffix.compare(".oc")!=0){
      errprintf("please enter a .oc file\n");
