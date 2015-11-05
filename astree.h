@@ -24,6 +24,12 @@ astree* adopt1 (astree* root, astree* child);
 // Append two children to the vector of children.
 astree* adopt2 (astree* root, astree* left, astree* right);
 
+// Append three children to the vector of children.
+astree* adopt3 (astree* root, astree* c1, astree* c2, astree* c3);
+
+//Create new root node and append three children.
+astree* funcCheck (astree* root, astree* param, astree* child);
+
 // Dump an astree to a FILE.
 void dump_astree (FILE* outfile, astree* root);
 

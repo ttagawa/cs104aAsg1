@@ -18,6 +18,7 @@ extern int yy_flex_debug;
 extern int yydebug;
 extern int yyleng;
 extern FILE* file_tok;
+extern FILE* file_ast;
 
 int yylex (void);
 int yyparse (void);

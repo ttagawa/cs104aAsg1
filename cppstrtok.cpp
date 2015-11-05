@@ -21,8 +21,10 @@ using namespace std;
 #include "stringset.h"
 #include "lyutils.h"
 FILE* file_tok;
+FILE* file_ast;
 string CPP = "/usr/bin/cpp";
 const size_t LINESIZE = 1024;
+int parsecode = 0;
 // Chomp the last character from a buffer if it is delim.
 void chomp (char* string, char delim) {
    size_t len = strlen (string);
@@ -88,10 +90,13 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
   string suffix = filename1.substr(pos);
   char* final_str = new char[base.length() + 5];
   char* final_tok = new char[base.length() + 5];
+  char* final_ast = new char[base.length() + 5];
   strcpy(final_str,base.c_str());
   strcat(final_str,".str");
   strcpy(final_tok,base.c_str());
   strcat(final_tok,".tok");
+  strcpy(final_ast,base.c_str());
+  strcat(final_ast,".ast");
   ofstream file_str(final_str);
     //  ofstream file_tok(final_tok);
       yyin = popen (command.c_str(), "r");
@@ -99,13 +104,15 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
          syserrprintf (command.c_str());
       }else {
         file_tok = fopen(final_tok, "w");
-        yyparse();
+        parsecode = yyparse();
       }
    if(suffix.compare(".oc")!=0){
      errprintf("please enter a .oc file\n");
      return get_exitstatus();
    }
+   file_ast = fopen(final_ast, "w");
    dump_stringset(file_str);
+   dump_astree(file_ast, yyparse_astree);
    file_str.close();
    fclose(file_tok);
    delete [] final_str;

@@ -33,6 +33,24 @@ astree* adopt2 (astree* root, astree* left, astree* right) {
    return root;
 }
 
+astree* adopt3 (astree* root, astree* c1, astree* c2, astree* c3){
+  adopt1(root,c1);
+  adopt1(root,c2);
+  adopt1(root,c3);
+  return root;
+}
+
+astree* funcCheck (astree* root, astree* param, astree *child){
+  astree* node;
+  if(child->symbol == (int)';'){
+    node = new astree(TOK_PROTOTYPE,root->filenr,root->linenr,root->offset,"");
+    adopt2(node,root,param);
+  }else{
+    node = new astree (TOK_FUNCTION,root->filenr,root->linenr,root->offset,"");
+    adopt3(node,root,param,child);
+  }
+  return node;
+}
 
 static void dump_node (FILE* outfile, astree* node) {
   // fprintf (outfile, "%p->{%s(%d) %ld:%ld.%03ld \"%s\" [",

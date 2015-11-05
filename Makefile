@@ -33,7 +33,7 @@ TESTINS   = ${wildcard test*.in}
 EXECTEST  = ${EXECBIN} -ly
 LISTSRC   = ${ALLSRC} ${DEPSFILE} ${PARSEHDR}
 
-all : ${EXECBIN}
+all : ${ALLGENS} ${EXECBIN}
 
 ${EXECBIN} : ${OBJECTS}
 	${CPP} -o${EXECBIN} ${OBJECTS}
