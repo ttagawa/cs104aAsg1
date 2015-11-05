@@ -78,8 +78,12 @@ identdecl   : basetype TOK_ARRAY TOK_IDENT       {$3->symbol=TOK_DECLID; $$=adop
             | basetype TOK_IDENT                 {$2->symbol=TOK_DECLID; $$=adopt1($1,$2);}
             ;
 
-block       : '{' block statement ';' '}'
-            | statement ';'
+block       : '{' '}'
+            | blockhelp '}'
+            ;
+
+blockhelp   : blockhelp statement
+            | '{' statement
             ;
 
 statement   : block       {$$=$1;}
@@ -104,13 +108,13 @@ return      : TOK_RETURN expr ';' {$$=adopt1($1,$2);free_ast($3);}
             | TOK_RETURN ';'      {$1->symbol=TOK_RETURNVOID; $$=$1;free_ast($2);}
             ;
 
-expr        : binop
-            | unop
-            | allocator
-            | call
-            | '(' expr ')'
-            | variable
-            | constant
+expr        : binop         {$$=$1;}
+            | unop          {$$=$1;}
+            | allocator     {$$=$1;}
+            | call          {$$=$1;}
+            | '(' expr ')'  {$$=$2; free_ast2($1,$3);}
+            | variable      {$$=$1;}
+            | constant      {$$=$1;}
             ;
 
 binop       : expr '=' expr     {$$=adopt2($2,$1,$3);}
@@ -139,12 +143,12 @@ allocator   : TOK_NEW TOK_IDENT '(' ')'
             | TOK_NEW basetype '[' expr ']'
             ;
 
-call        : TOK_IDENT callparams ')'
+call        : TOK_IDENT '(' ')'
+            | callhelp ')'
             ;
 
-callparams  : '('
-            | callparams ',' expr
-            | callparams expr
+callhelp    : callhelp ',' expr
+            | TOK_IDENT '(' expr
             ;
 
 variable    : TOK_IDENT
