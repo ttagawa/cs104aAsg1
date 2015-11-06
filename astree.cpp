@@ -74,9 +74,19 @@ static void dump_node (FILE* outfile, astree* node) {
 static void dump_astree_rec (FILE* outfile, astree* root,
                              int depth) {
    if (root == NULL) return;
-   fprintf (outfile, "%*s%s ", depth * 3, "",
-            root->lexinfo->c_str());
-   dump_node (outfile, root);
+   char *tname = (char*)get_yytname(root->symbol);
+   if(strstr(tname,"TOK_")==tname)tname+=4;
+   //fprintf (outfile, "%*s%s%3d%ld.%ld.%ld ", depth * 3, "",root->symbol,
+  //            root->filenr,root->linenr,root->offset);
+          //  root->lexinfo->c_str());
+    string bars;
+    for(int i=0;i<depth;i++){
+      bars+="|   ";
+    }
+    fprintf(outfile,"%s%s \"%s\" %zu.%zu.%zu",bars.c_str(),
+            tname,root->lexinfo->c_str(),
+            root->filenr,root->linenr,root->offset);
+   //dump_node (outfile, root);
    fprintf (outfile, "\n");
    for (size_t child = 0; child < root->children.size();
         ++child) {

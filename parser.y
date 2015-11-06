@@ -21,6 +21,7 @@
 %token TOK_POS TOK_NEG TOK_NEWARRAY TOK_TYPEID TOK_FIELD
 %token TOK_ROOT TOK_ORD TOK_CHR TOK_DECLID TOK_VARDECL
 %token TOK_FUNCTION TOK_PROTOTYPE TOK_PARAM TOK_RETURNVOID
+%token TOK_NEWSTRING TOK_INDEX
 
 %right  TOK_IF TOK_ELSE
 %right  '='
@@ -45,8 +46,8 @@ program : program structdef   { $$ = adopt1($1,$2); }
         |                     { $$ = new_parseroot(); }
         ;
 
-structdef   : TOK_STRUCT TOK_IDENT '{' fields '}'
-              { $$ = adopt2($1,$2,$4); $2->symbol=TOK_TYPEID;free_ast2($3,$5);}
+structdef   : TOK_STRUCT TOK_IDENT '{' fields '}'   { $$ = adopt2($1,$2,$4);
+                                                    $2->symbol=TOK_TYPEID;free_ast2($3,$5);}
             | TOK_STRUCT TOK_IDENT '{' '}'  {$$ = adopt1($1,$2); free_ast2($3,$4);}
 
 fields      : fields fielddec ';'{$2->symbol=TOK_TYPEID; $$=adopt1($1,$2);}
@@ -78,12 +79,12 @@ identdecl   : basetype TOK_ARRAY TOK_IDENT       {$3->symbol=TOK_DECLID; $$=adop
             | basetype TOK_IDENT                 {$2->symbol=TOK_DECLID; $$=adopt1($1,$2);}
             ;
 
-block       : '{' '}'
-            | blockhelp '}'
+block       : '{' '}'         { $1->symbol=TOK_BLOCK; $$=$1;free_ast($2); }
+            | blockhelp '}'   { $$=$1;free_ast($2); }
             ;
 
-blockhelp   : blockhelp statement
-            | '{' statement
+blockhelp   : blockhelp statement {$$=adopt1($1,$2);}
+            | '{' statement       { $1->symbol=TOK_BLOCK; $$=adopt1($1,$2);}
             ;
 
 statement   : block       {$$=$1;}
@@ -138,22 +139,32 @@ unop        : '+' expr %prec TOK_POS     {$1->symbol=TOK_POS; $$=adopt1($1,$2);}
             | TOK_CHR expr  {$$=adopt1($1,$2);}
             ;
 
-allocator   : TOK_NEW TOK_IDENT '(' ')'
-            | TOK_NEW TOK_STRING '(' expr ')'
-            | TOK_NEW basetype '[' expr ']'
+allocator   : TOK_NEW TOK_IDENT '(' ')'        { $2->symbol=TOK_TYPEID;
+                                                $$=adopt1($1,$2);
+                                                free_ast2($3,$4);}
+            | TOK_NEW TOK_STRING '(' expr ')'  {$1->symbol=TOK_NEWSTRING;
+                                                $$=adopt1($1,$4);
+                                                free_ast2($2,$3);free_ast($5);}
+            | TOK_NEW basetype '[' expr ']'    {$1->symbol=TOK_NEWARRAY;
+                                                $$=adopt2($1,$2,$4);free_ast2($3,$5);}
             ;
 
-call        : TOK_IDENT '(' ')'
-            | callhelp ')'
+call        : TOK_IDENT '(' ')'       {$2->symbol=TOK_CALL;
+                                        $$=adopt1($2,$1);free_ast($3);}
+            | callhelp ')'            {$$=$1;free_ast($2);}
             ;
 
-callhelp    : callhelp ',' expr
-            | TOK_IDENT '(' expr
+callhelp    : callhelp ',' expr       {$$=adopt1($1,$3);free_ast($2);}
+            | TOK_IDENT '(' expr      {$2->symbol=TOK_CALL;
+                                        adopt2($2,$1,$3);}
             ;
 
-variable    : TOK_IDENT
-            | expr '[' expr ']'
-            | expr '.' TOK_IDENT  {$3->symbol=TOK_FIELD;}
+variable    : TOK_IDENT             {$$=$1}
+            | expr '[' expr ']'     {$2->symbol=TOK_INDEX;
+                                      $$=adopt2($2,$1,$3);
+                                      free_ast($4);}
+            | expr '.' TOK_IDENT  {$3->symbol=TOK_FIELD;
+                                    $$=adopt2($2,$1,$3);}
             ;
 
 constant    : TOK_INTCON        {$$=$1}
