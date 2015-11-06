@@ -156,7 +156,7 @@ call        : TOK_IDENT '(' ')'       {$2->symbol=TOK_CALL;
 
 callhelp    : callhelp ',' expr       {$$=adopt1($1,$3);free_ast($2);}
             | TOK_IDENT '(' expr      {$2->symbol=TOK_CALL;
-                                        adopt2($2,$1,$3);}
+                                        $$=adopt2($2,$1,$3);}
             ;
 
 variable    : TOK_IDENT             {$$=$1}
