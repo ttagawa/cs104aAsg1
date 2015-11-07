@@ -43,10 +43,12 @@ astree* adopt3 (astree* root, astree* c1, astree* c2, astree* c3){
 astree* funcCheck (astree* root, astree* param, astree *child){
   astree* node;
   if(child->symbol == (int)';'){
-    node = new astree(TOK_PROTOTYPE,root->filenr,root->linenr,root->offset,"");
+    node = new astree(TOK_PROTOTYPE,root->filenr,
+      root->linenr,root->offset,"");
     adopt2(node,root,param);
   }else{
-    node = new astree (TOK_FUNCTION,root->filenr,root->linenr,root->offset,"");
+    node = new astree (TOK_FUNCTION,root->filenr,
+      root->linenr,root->offset,"");
     adopt3(node,root,param,child);
   }
   return node;
@@ -76,9 +78,6 @@ static void dump_astree_rec (FILE* outfile, astree* root,
    if (root == NULL) return;
    char *tname = (char*)get_yytname(root->symbol);
    if(strstr(tname,"TOK_")==tname)tname+=4;
-   //fprintf (outfile, "%*s%s%3d%ld.%ld.%ld ", depth * 3, "",root->symbol,
-  //            root->filenr,root->linenr,root->offset);
-          //  root->lexinfo->c_str());
     string bars;
     for(int i=0;i<depth;i++){
       bars+="|   ";
@@ -86,7 +85,6 @@ static void dump_astree_rec (FILE* outfile, astree* root,
     fprintf(outfile,"%s%s \"%s\" %zu.%zu.%zu",bars.c_str(),
             tname,root->lexinfo->c_str(),
             root->filenr,root->linenr,root->offset);
-   //dump_node (outfile, root);
    fprintf (outfile, "\n");
    for (size_t child = 0; child < root->children.size();
         ++child) {

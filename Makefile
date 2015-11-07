@@ -65,6 +65,7 @@ clean :
 	- rm ${OBJECTS} ${ALLGENS} ${REPORTS} ${DEPSFILE} core
 	- rm ${foreach test, ${TESTINS:.in=}, \
 		${patsubst %, ${test}.%, out err log}}
+		rm *.str *.tok *.ast *.err *.out
 
 spotless : clean
 	- rm ${EXECBIN} List.*.ps List.*.pdf

@@ -115,8 +115,11 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
    dump_astree(file_ast, yyparse_astree);
    file_str.close();
    fclose(file_tok);
+   fclose(file_ast);
    delete [] final_str;
    delete [] final_tok;
+   delete [] final_ast;
+   pclose(yyin);
    yylex_destroy();
    return get_exitstatus();
 }
