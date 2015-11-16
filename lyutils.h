@@ -19,6 +19,7 @@ extern int yydebug;
 extern int yyleng;
 extern FILE* file_tok;
 extern FILE* file_ast;
+extern FILE* file_sym;
 
 int yylex (void);
 int yyparse (void);

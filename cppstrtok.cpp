@@ -15,13 +15,13 @@ using namespace std;
 #include <unistd.h>
 #include <getopt.h>
 #include <iostream>
-
-
 #include "auxlib.h"
 #include "stringset.h"
 #include "lyutils.h"
+#include "symtab.h"
 FILE* file_tok;
 FILE* file_ast;
+FILE* file_sym;
 string CPP = "/usr/bin/cpp";
 const size_t LINESIZE = 1024;
 int parsecode = 0;
@@ -91,12 +91,15 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
   char* final_str = new char[base.length() + 5];
   char* final_tok = new char[base.length() + 5];
   char* final_ast = new char[base.length() + 5];
+  char* final_sym = new char[base.length() + 5];
   strcpy(final_str,base.c_str());
   strcat(final_str,".str");
   strcpy(final_tok,base.c_str());
   strcat(final_tok,".tok");
   strcpy(final_ast,base.c_str());
   strcat(final_ast,".ast");
+  strcpy(final_sym,base.c_str());
+  strcat(final_sym,".sym");
   ofstream file_str(final_str);
     //  ofstream file_tok(final_tok);
       yyin = popen (command.c_str(), "r");
@@ -111,6 +114,8 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
      return get_exitstatus();
    }
    file_ast = fopen(final_ast, "w");
+   file_sym = fopen(final_sym,"w");
+   traverseAstree(yyparse_astree);
    dump_stringset(file_str);
    dump_astree(file_ast, yyparse_astree);
    file_str.close();
