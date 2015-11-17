@@ -30,8 +30,11 @@ struct symbol {
   vector<symbol*>* parameters;
 };
 
+bool typechkArr(astree* n, astree* n1);
 
 void dumpToFile(FILE* outfile, symbol* sym, astree* root);
+
+void insertArr(astree* node, astree* node1);
 
 symbol *create_symbol (astree *sym_node);
 

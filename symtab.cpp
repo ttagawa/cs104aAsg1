@@ -62,11 +62,28 @@ int getReturnType(astree* root){
     case TOK_BOOL:return sym;break;
     case TOK_IDENT:
         if(lookup(root->lexinfo)){
-          printf("hi\n");
           symbol* val = lookupSym(root->lexinfo);
           return getIdentReturn(val);
         }
         break;
+    case '+': case '-': case '*': case '/': case '%':
+      {
+        int left = getReturnType(root->children[0]);
+        int right = getReturnType(root->children[1]);
+        if(right == left){
+          return right;
+        }else{
+          errprintf("%zu.%zu.%zu Type check error: %s does not match %s\n"
+          ,root->children[0]->filenr,root->children[0]->linenr,
+          root->children[0]->offset,get_yytname(left),get_yytname(right));
+          return right;
+        }
+        break;
+      }
+    case TOK_NEWARRAY:
+      return TOK_NEWARRAY;
+      break;
+
   }
 }
 
@@ -87,6 +104,88 @@ void dumpToFile(FILE* outfile, symbol* sym, astree* root){
   fprintf(outfile, "%s %s (%zu.%zu.%zu) {%zu} %s\n", spaces.c_str(),
           root->lexinfo->c_str(),sym->filenr, sym->linenr, sym->offset,
                     sym->block_nr, attrs.c_str());
+}
+
+void insertArr(astree* node, astree* node1){
+    if(typechkArr(node, node1)){
+      int arrSym = node->symbol;
+      switch (arrSym){
+        case TOK_INT:
+        {
+          symbol *newSym = create_symbol(node->children[1]);
+          newSym->attributes.set(ATTR_int);
+          newSym->attributes.set(ATTR_array);
+          newSym->attributes.set(ATTR_lval);
+          newSym->attributes.set(ATTR_variable);
+          if(symbol_stack.empty()){
+            symbol_table* tab = new symbol_table();
+            tab->insert(symbol_entry(node->children[1]->lexinfo,newSym));
+            symbol_stack.push_back(tab);
+          }else{
+            symbol_stack.back()->insert(symbol_entry(node->children[1]->
+                                                  lexinfo,newSym));
+        }
+        dumpToFile(file_sym, newSym, node->children[1]);
+        break;
+        }
+        case TOK_CHAR:
+        {
+          symbol *newSym = create_symbol(node->children[1]);
+          newSym->attributes.set(ATTR_char);
+          newSym->attributes.set(ATTR_array);
+          newSym->attributes.set(ATTR_lval);
+          newSym->attributes.set(ATTR_variable);
+          if(symbol_stack.empty()){
+            symbol_table* tab = new symbol_table();
+            tab->insert(symbol_entry(node->children[1]->lexinfo,newSym));
+            symbol_stack.push_back(tab);
+          }else{
+            symbol_stack.back()->insert(symbol_entry(node->children[1]->
+                                                    lexinfo,newSym));
+          }
+          dumpToFile(file_sym, newSym, node->children[1]);
+          break;
+        }
+
+        case TOK_BOOL:
+        {
+          symbol *newSym = create_symbol(node->children[1]);
+          newSym->attributes.set(ATTR_bool);
+          newSym->attributes.set(ATTR_lval);
+          newSym->attributes.set(ATTR_array);
+          newSym->attributes.set(ATTR_variable);
+          if(symbol_stack.empty()){
+            symbol_table* tab = new symbol_table();
+            tab->insert(symbol_entry(node->children[1]->lexinfo,newSym));
+            symbol_stack.push_back(tab);
+          }else{
+            symbol_stack.back()->insert(symbol_entry(node->children[1]->
+                                                    lexinfo,newSym));
+          }
+          dumpToFile(file_sym, newSym, node->children[1]);
+          break;
+        }
+      }
+    }
+}
+
+bool typechkArr ( astree* node, astree* node1){
+  int right2 = getReturnType(node1->children[1]);
+  int right1 = getReturnType(node1->children[0]);
+  if(right2!=TOK_INTCON){
+    errprintf("%zu.%zu.%zu Array size allocator not of type int.\n",
+    node1->children[1]->filenr, node1->children[1]->linenr,
+    node1->children[1]->offset);
+    return false;
+  }else if(node->symbol == right1){
+    return true;
+  }else{
+    errprintf("%zu.%zu.%zu Type check error: %s does not match %s\n"
+    ,node->children[0]->filenr,node->children[0]->linenr,
+    node->children[0]->offset,get_yytname(node->symbol),
+                                   get_yytname(right1));
+    return false;
+  }
 }
 
 void travVardecl(astree* root){
@@ -110,6 +209,8 @@ void travVardecl(astree* root){
                                                   lexinfo,newSym));
         }
         dumpToFile(file_sym, newSym, node->children[0]);
+      }else if(otherSym == TOK_NEWARRAY){
+        insertArr(node, node1);
       }
       break;
 
@@ -128,6 +229,8 @@ void travVardecl(astree* root){
                                                   lexinfo,newSym));
         }
         dumpToFile(file_sym, newSym, node->children[0]);
+      } else if(otherSym == TOK_NEWARRAY){
+        insertArr(node, node1);
       }
       break;
 
@@ -146,9 +249,11 @@ void travVardecl(astree* root){
                                                   lexinfo,newSym));
         }
         dumpToFile(file_sym, newSym, node->children[0]);
+      } else if (otherSym == TOK_NEWARRAY){
+        insertArr(node, node1);
       }
       break;
-  }
+    }
 }
 
 void traverseAstree(astree* root){
