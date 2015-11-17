@@ -35,6 +35,14 @@ void dumpToFile(FILE* outfile, symbol* sym, astree* root);
 
 symbol *create_symbol (astree *sym_node);
 
+bool lookup(const string* x, astree* node);
+
+symbol* lookupSym(const string* x);
+
+int getIdentReturn(symbol* sym);
+
+int getReturnType(astree* root);
+
 string getAttr(symbol* sym);
 
 void travVardecl(astree* root);
