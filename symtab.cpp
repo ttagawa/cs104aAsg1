@@ -8,6 +8,7 @@ vector<string> attrArray { "void", "bool", "char", "int", "null",
     };
 
 vector<symbol_table*> symbol_stack;
+int flag = 0;
 
 symbol *create_symbol (astree *sym_node){
   if(sym_node==NULL) return NULL;
@@ -70,7 +71,7 @@ int getReturnType(astree* root){
       {
         int left = getReturnType(root->children[0]);
         int right = getReturnType(root->children[1]);
-        if(right == left){
+        if(right == left && right == TOK_INTCON){
           return right;
         }else{
           errprintf("%zu.%zu.%zu Type check error: %s does not match %s\n"
@@ -82,6 +83,9 @@ int getReturnType(astree* root){
       }
     case TOK_NEWARRAY:
       return TOK_NEWARRAY;
+      break;
+    case TOK_NEWSTRING:
+      return TOK_NEWSTRING;
       break;
 
   }
@@ -107,7 +111,9 @@ void dumpToFile(FILE* outfile, symbol* sym, astree* root){
 }
 
 void insertArr(astree* node, astree* node1){
+    printf("first\n");
     if(typechkArr(node, node1)){
+      printf("second\n");
       int arrSym = node->symbol;
       switch (arrSym){
         case TOK_INT:
@@ -117,7 +123,7 @@ void insertArr(astree* node, astree* node1){
           newSym->attributes.set(ATTR_array);
           newSym->attributes.set(ATTR_lval);
           newSym->attributes.set(ATTR_variable);
-          if(symbol_stack.empty()){
+          if(symbol_stack.back() == nullptr || symbol_stack.empty()){
             symbol_table* tab = new symbol_table();
             tab->insert(symbol_entry(node->children[1]->lexinfo,newSym));
             symbol_stack.push_back(tab);
@@ -135,7 +141,7 @@ void insertArr(astree* node, astree* node1){
           newSym->attributes.set(ATTR_array);
           newSym->attributes.set(ATTR_lval);
           newSym->attributes.set(ATTR_variable);
-          if(symbol_stack.empty()){
+          if(symbol_stack.back() == nullptr || symbol_stack.empty()){
             symbol_table* tab = new symbol_table();
             tab->insert(symbol_entry(node->children[1]->lexinfo,newSym));
             symbol_stack.push_back(tab);
@@ -154,7 +160,7 @@ void insertArr(astree* node, astree* node1){
           newSym->attributes.set(ATTR_lval);
           newSym->attributes.set(ATTR_array);
           newSym->attributes.set(ATTR_variable);
-          if(symbol_stack.empty()){
+          if(symbol_stack.back() == nullptr || symbol_stack.empty()) {
             symbol_table* tab = new symbol_table();
             tab->insert(symbol_entry(node->children[1]->lexinfo,newSym));
             symbol_stack.push_back(tab);
@@ -172,6 +178,7 @@ void insertArr(astree* node, astree* node1){
 bool typechkArr ( astree* node, astree* node1){
   int right2 = getReturnType(node1->children[1]);
   int right1 = getReturnType(node1->children[0]);
+  printf("%s r1, %s r2\n", get_yytname(right1), get_yytname(right2));
   if(right2!=TOK_INTCON){
     errprintf("%zu.%zu.%zu Array size allocator not of type int.\n",
     node1->children[1]->filenr, node1->children[1]->linenr,
@@ -200,7 +207,7 @@ void travVardecl(astree* root){
         newSym->attributes.set(ATTR_int);
         newSym->attributes.set(ATTR_lval);
         newSym->attributes.set(ATTR_variable);
-        if(symbol_stack.empty()){
+        if(symbol_stack.back() == nullptr || symbol_stack.empty()){
           symbol_table* tab = new symbol_table();
           tab->insert(symbol_entry(node->children[0]->lexinfo,newSym));
           symbol_stack.push_back(tab);
@@ -220,7 +227,7 @@ void travVardecl(astree* root){
         newSym->attributes.set(ATTR_char);
         newSym->attributes.set(ATTR_lval);
         newSym->attributes.set(ATTR_variable);
-        if(symbol_stack.empty()){
+        if(symbol_stack.back() == nullptr || symbol_stack.empty()){
           symbol_table* tab = new symbol_table();
           tab->insert(symbol_entry(node->children[0]->lexinfo,newSym));
           symbol_stack.push_back(tab);
@@ -240,7 +247,7 @@ void travVardecl(astree* root){
         newSym->attributes.set(ATTR_bool);
         newSym->attributes.set(ATTR_lval);
         newSym->attributes.set(ATTR_variable);
-        if(symbol_stack.empty()){
+        if(symbol_stack.back() == nullptr || symbol_stack.empty()){
           symbol_table* tab = new symbol_table();
           tab->insert(symbol_entry(node->children[0]->lexinfo,newSym));
           symbol_stack.push_back(tab);
@@ -253,14 +260,106 @@ void travVardecl(astree* root){
         insertArr(node, node1);
       }
       break;
+    case TOK_STRING:
+      if(otherSym == TOK_NEWSTRING){
+        if(node1->children[0]->symbol == TOK_INTCON){
+          symbol *newSym = create_symbol(node->children[0]);
+          newSym->attributes.set(ATTR_string);
+          newSym->attributes.set(ATTR_lval);
+          newSym->attributes.set(ATTR_variable);
+          if(symbol_stack.back() == nullptr || symbol_stack.empty()){
+            symbol_table* tab = new symbol_table();
+            tab->insert(symbol_entry(node->children[0]->lexinfo,newSym));
+            symbol_stack.push_back(tab);
+          }else{
+            symbol_stack.back()->insert(symbol_entry(node->children[0]->
+                                                    lexinfo,newSym));
+          }
+          dumpToFile(file_sym, newSym, node->children[0]);
+        }else{
+          errprintf("%zu.%zu.%zu String size allocator not of type int.\n",
+          node1->children[1]->filenr, node1->children[1]->linenr,
+          node1->children[1]->offset);
+        }
+      }else if (otherSym == TOK_STRINGCON){
+        symbol *newSym = create_symbol(node->children[0]);
+        newSym->attributes.set(ATTR_string);
+        newSym->attributes.set(ATTR_lval);
+        newSym->attributes.set(ATTR_variable);
+        if(symbol_stack.back() == nullptr || symbol_stack.empty()){
+          symbol_table* tab = new symbol_table();
+          tab->insert(symbol_entry(node->children[0]->lexinfo,newSym));
+          symbol_stack.push_back(tab);
+        }else{
+          symbol_stack.back()->insert(symbol_entry(node->children[0]->
+                                                  lexinfo,newSym));
+        }
+        dumpToFile(file_sym, newSym, node->children[0]);
+      }
     }
 }
 
+void travCompare(astree* root){
+  int sym = root->symbol;
+  int left = getReturnType(root->children[0]);
+  int right = getReturnType(root->children[1]);
+  switch (sym){
+    case TOK_EQ: case TOK_NE:
+      if( left == right){
+        return;
+      } else {
+        errprintf("%zu.%zu.%zu Comparison is not of same type.\n",
+        root->filenr, root->linenr,root->offset);
+      }
+      break;
+    case TOK_GE: case TOK_GT: case TOK_LE: case TOK_LT:
+      if ( left == right && (right == TOK_INTCON ||
+                              right == TOK_CHARCON)){
+        return;
+      }else {
+       errprintf("%zu.%zu.%zu Comparison is not of same type"
+                " or is not of primitive type.\n",
+                root->filenr, root->linenr,root->offset);
+      }
+      break;
+  }
+}
+
+void validCompare(astree* node){
+  int sym = node->children[0]->symbol;
+  switch (sym){
+    case TOK_GE: case TOK_GT: case TOK_LE: case TOK_LT: case TOK_EQ:
+    case TOK_NE:
+       travCompare(node->children[0]);
+       break;
+    default:
+       errprintf("%zu.%zu.%zu Comparison is not valid.\n",
+       node->filenr, node->linenr,node->offset);
+  }
+}
+
 void traverseAstree(astree* root){
+if( flag == 0 ){
+  symbol_stack.push_back(nullptr);
+  flag++;
+}
   for (size_t a = 0; a < root->children.size(); ++a){
     int sym = root->children[a]->symbol;
     switch(sym){
-      case TOK_VARDECL: travVardecl(root->children[a]); break;
+      case TOK_VARDECL:
+        travVardecl(root->children[a]);
+        break;
+      case TOK_IF:
+         validCompare(root->children[a]);
+         symbol_stack.push_back(nullptr);
+         blockcount++;
+         printf("test\n");
+         traverseAstree(root->children[a]->children[1]);
+         printf("test2\n");
+         blockcount--;
+         symbol_stack.pop_back();
+         printf("test3\n");
+         break;
     }
   }
 }
