@@ -1,5 +1,5 @@
 #include "symtab.h"
-
+#include <string.h>
 size_t blockcount = 0;
 vector<string> attrArray { "void", "bool", "char", "int", "null",
       "string", "struct", "array", "function",
@@ -358,36 +358,153 @@ void validCompare(astree* node){
 }
 
 void traverseAstree(astree* root){
-if( flag == 0 ){
-  symbol_stack.push_back(nullptr);
-  flag++;
-}
+  if( flag == 0 ){
+    symbol_stack.push_back(nullptr);
+    flag++;
+  }
   for (size_t a = 0; a < root->children.size(); ++a){
     int sym = root->children[a]->symbol;
+    astree* curr = root->children[a];
     switch(sym){
       case TOK_VARDECL:
-        travVardecl(root->children[a]);
+        travVardecl(curr);
         break;
       case TOK_IF: case TOK_WHILE:
-         validCompare(root->children[a]);
+         validCompare(curr);
          symbol_stack.push_back(nullptr);
          blockcount++;
-         traverseAstree(root->children[a]->children[1]);
+         traverseAstree(curr->children[1]);
          blockcount--;
          symbol_stack.pop_back();
          break;
       case TOK_IFELSE:
-        validCompare(root->children[a]);
+        validCompare(curr);
         symbol_stack.push_back(nullptr);
         blockcount++;
-        traverseAstree(root->children[a]->children[1]);
+        traverseAstree(curr->children[1]);
         blockcount--;
         symbol_stack.pop_back();
         symbol_stack.push_back(nullptr);
         blockcount++;
-        traverseAstree(root->children[a]->children[2]);
+        traverseAstree(curr->children[2]);
         blockcount--;
         symbol_stack.pop_back();
+        break;
+      case TOK_FUNCTION:
+        symbol* newFunc = create_symbol(root->children[a]);
+        newFunc->attributes.set(ATTR_function);
+        switch(curr->children[0]->symbol){
+          case TOK_INT:
+            newFunc->attributes.set(ATTR_int);
+            break;
+          case TOK_STRING:
+            newFunc->attributes.set(ATTR_string);
+            break;
+          case TOK_CHAR:
+            newFunc->attributes.set(ATTR_char);
+            break;
+          case TOK_BOOL:
+            newFunc->attributes.set(ATTR_bool);
+            break;
+        }
+
+        for(size_t i = 0; i<curr->children.size(); i++){
+          astree* param_node = curr->children[1]->children[i];
+          symbol* param = create_symbol(param_node->children[0]);
+          param->attributes.set(ATTR_variable);
+          param->attributes.set(ATTR_lval);
+          param->attributes.set(ATTR_param);
+          int paramSym = param_node->symbol;
+          switch(paramSym){
+            case TOK_INT:
+              param->attributes.set(ATTR_int);
+              break;
+            case TOK_CHAR:
+              param->attributes.set(ATTR_char);
+              break;
+            case TOK_STRING:
+              param->attributes.set(ATTR_string);
+              break;
+            case TOK_BOOL:
+              param->attributes.set(ATTR_bool);
+              break;
+          }
+          newFunc->parameters = new vector<symbol*>;
+          newFunc->parameters->push_back(param);
+        }
+        if(symbol_stack.back() == nullptr || symbol_stack.empty()){
+          symbol_table* tab = new symbol_table();
+          tab->insert(symbol_entry(curr->children[0]->children[0]->
+                                                 lexinfo,newFunc));
+          symbol_stack.pop_back();
+          symbol_stack.push_back(tab);
+        }else{
+          symbol_stack.back()->insert(symbol_entry(curr->children[0]->
+                                      children[0]->lexinfo,newFunc));
+        }
+        dumpToFile(file_sym, newFunc, curr->children[0]->children[0]);
+        symbol_stack.push_back(nullptr);
+        blockcount++;
+        int funcSym;
+        switch (curr->children[0]->symbol){
+          case TOK_INT:
+            funcSym = TOK_INTCON;
+            break;
+          case TOK_CHAR:
+            funcSym = TOK_CHARCON;
+            break;
+          case TOK_STRING:
+            funcSym = TOK_STRINGCON;
+            break;
+          case TOK_BOOL:
+            funcSym = TOK_BOOL;
+            break;
+        }
+        traverseFunc(curr->children[2], funcSym);
+        blockcount--;
+        symbol_stack.pop_back();
+    }
+  }
+}
+
+void traverseFunc(astree* root, int symbol){
+  for (size_t a = 0; a < root->children.size(); ++a){
+    int sym = root->children[a]->symbol;
+    astree* curr = root->children[a];
+    switch(sym){
+      case TOK_VARDECL:
+        travVardecl(curr);
+        break;
+      case TOK_IF: case TOK_WHILE:
+         validCompare(curr);
+         symbol_stack.push_back(nullptr);
+         blockcount++;
+         traverseAstree(curr->children[1]);
+         blockcount--;
+         symbol_stack.pop_back();
+         break;
+      case TOK_IFELSE:
+        validCompare(curr);
+        symbol_stack.push_back(nullptr);
+        blockcount++;
+        traverseAstree(curr->children[1]);
+        blockcount--;
+        symbol_stack.pop_back();
+        symbol_stack.push_back(nullptr);
+        blockcount++;
+        traverseAstree(curr->children[2]);
+        blockcount--;
+        symbol_stack.pop_back();
+        break;
+      case TOK_RETURN:
+        if( getReturnType(curr->children[0]) != symbol ){
+          char *tname = (char* )get_yytname (symbol);
+          if (strstr (tname, "TOK_") == tname) tname += 4;
+          errprintf("%zu.%zu.%zu Return type does not match return type of "
+          "function (%s)\n", curr->filenr, curr->linenr,
+          curr->offset, tname);
+        }
+        break;
     }
   }
 }

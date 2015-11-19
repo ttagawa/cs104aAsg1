@@ -32,6 +32,8 @@ struct symbol {
 
 void travCompare(astree* root);
 
+void traverseFunc(astree* root, int symbol);
+
 bool typechkArr(astree* n, astree* n1);
 
 void dumpToFile(FILE* outfile, symbol* sym, astree* root);
