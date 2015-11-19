@@ -24,6 +24,9 @@ symbol *create_symbol (astree *sym_node){
 
 bool lookup(const string* x){
   for(auto i=symbol_stack.crbegin();i!=symbol_stack.crend();++i){
+    if(*i == nullptr){
+      continue;
+    }
     symbol_table* pos = *i;
     auto result = pos->find(x);
     if(result!=pos->cend()) return true;
@@ -33,6 +36,9 @@ bool lookup(const string* x){
 
 symbol* lookupSym(const string* x){
   for(auto i=symbol_stack.crbegin();i!=symbol_stack.crend();++i){
+    if(*i == nullptr){
+      continue;
+    }
     symbol_table* pos = *i;
     auto result = pos->find(x);
     if(result!=pos->cend()) return result->second;
@@ -65,6 +71,11 @@ int getReturnType(astree* root){
         if(lookup(root->lexinfo)){
           symbol* val = lookupSym(root->lexinfo);
           return getIdentReturn(val);
+        }else{
+          errprintf("%zu.%zu.%zu"
+          " Variable being referenced is undefined\n",root->filenr,
+          root->linenr,root->offset);
+          return -1;
         }
         break;
     case '+': case '-': case '*': case '/': case '%':
@@ -126,6 +137,7 @@ void insertArr(astree* node, astree* node1){
           if(symbol_stack.back() == nullptr || symbol_stack.empty()){
             symbol_table* tab = new symbol_table();
             tab->insert(symbol_entry(node->children[1]->lexinfo,newSym));
+            symbol_stack.pop_back();
             symbol_stack.push_back(tab);
           }else{
             symbol_stack.back()->insert(symbol_entry(node->children[1]->
@@ -144,6 +156,7 @@ void insertArr(astree* node, astree* node1){
           if(symbol_stack.back() == nullptr || symbol_stack.empty()){
             symbol_table* tab = new symbol_table();
             tab->insert(symbol_entry(node->children[1]->lexinfo,newSym));
+            symbol_stack.pop_back();
             symbol_stack.push_back(tab);
           }else{
             symbol_stack.back()->insert(symbol_entry(node->children[1]->
@@ -163,6 +176,7 @@ void insertArr(astree* node, astree* node1){
           if(symbol_stack.back() == nullptr || symbol_stack.empty()) {
             symbol_table* tab = new symbol_table();
             tab->insert(symbol_entry(node->children[1]->lexinfo,newSym));
+            symbol_stack.pop_back();
             symbol_stack.push_back(tab);
           }else{
             symbol_stack.back()->insert(symbol_entry(node->children[1]->
@@ -210,6 +224,7 @@ void travVardecl(astree* root){
         if(symbol_stack.back() == nullptr || symbol_stack.empty()){
           symbol_table* tab = new symbol_table();
           tab->insert(symbol_entry(node->children[0]->lexinfo,newSym));
+          symbol_stack.pop_back();
           symbol_stack.push_back(tab);
         }else{
           symbol_stack.back()->insert(symbol_entry(node->children[0]->
@@ -230,6 +245,7 @@ void travVardecl(astree* root){
         if(symbol_stack.back() == nullptr || symbol_stack.empty()){
           symbol_table* tab = new symbol_table();
           tab->insert(symbol_entry(node->children[0]->lexinfo,newSym));
+          symbol_stack.pop_back();
           symbol_stack.push_back(tab);
         }else{
           symbol_stack.back()->insert(symbol_entry(node->children[0]->
@@ -250,6 +266,7 @@ void travVardecl(astree* root){
         if(symbol_stack.back() == nullptr || symbol_stack.empty()){
           symbol_table* tab = new symbol_table();
           tab->insert(symbol_entry(node->children[0]->lexinfo,newSym));
+          symbol_stack.pop_back();
           symbol_stack.push_back(tab);
         }else{
           symbol_stack.back()->insert(symbol_entry(node->children[0]->
@@ -270,6 +287,7 @@ void travVardecl(astree* root){
           if(symbol_stack.back() == nullptr || symbol_stack.empty()){
             symbol_table* tab = new symbol_table();
             tab->insert(symbol_entry(node->children[0]->lexinfo,newSym));
+            symbol_stack.pop_back();
             symbol_stack.push_back(tab);
           }else{
             symbol_stack.back()->insert(symbol_entry(node->children[0]->
@@ -289,6 +307,7 @@ void travVardecl(astree* root){
         if(symbol_stack.back() == nullptr || symbol_stack.empty()){
           symbol_table* tab = new symbol_table();
           tab->insert(symbol_entry(node->children[0]->lexinfo,newSym));
+          symbol_stack.pop_back();
           symbol_stack.push_back(tab);
         }else{
           symbol_stack.back()->insert(symbol_entry(node->children[0]->
@@ -349,17 +368,26 @@ if( flag == 0 ){
       case TOK_VARDECL:
         travVardecl(root->children[a]);
         break;
-      case TOK_IF:
+      case TOK_IF: case TOK_WHILE:
          validCompare(root->children[a]);
          symbol_stack.push_back(nullptr);
          blockcount++;
-         printf("test\n");
          traverseAstree(root->children[a]->children[1]);
-         printf("test2\n");
          blockcount--;
          symbol_stack.pop_back();
-         printf("test3\n");
          break;
+      case TOK_IFELSE:
+        validCompare(root->children[a]);
+        symbol_stack.push_back(nullptr);
+        blockcount++;
+        traverseAstree(root->children[a]->children[1]);
+        blockcount--;
+        symbol_stack.pop_back();
+        symbol_stack.push_back(nullptr);
+        blockcount++;
+        traverseAstree(root->children[a]->children[2]);
+        blockcount--;
+        symbol_stack.pop_back();
     }
   }
 }
