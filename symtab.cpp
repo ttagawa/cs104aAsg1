@@ -14,6 +14,7 @@ symbol *create_symbol (astree *sym_node){
   if(sym_node==NULL) return NULL;
   symbol *newSym = new symbol();
   newSym->fields = NULL;
+  newSym->typeid = NULL;
   newSym->filenr = sym_node->filenr;
   newSym->linenr = sym_node->linenr;
   newSym->offset = sym_node->offset;
@@ -104,13 +105,22 @@ int getReturnType(astree* root){
       checkCall(root);
       return getReturnType(root->children[0]);
       break;
+    case TOK_POS: case TOK_NEG:
+      return getReturnType(root->children[0]);
+      break;
   }
 }
 
 string getAttr(symbol* sym){
   string attrstr;
   for(size_t i = 0; i<sym->attributes.size(); i++){
-    if(sym->attributes[i]==1) attrstr+=attrArray[i]+" ";
+    if(sym->attributes[i]==1){
+      if(sym->attributes[ATTR_typeid]==1){
+        attrstr+="{"+sym->typeid+"}"+" ";
+        continue;
+      }
+      attrstr+=attrArray[i]+" ";
+    }
   }
   return attrstr;
 }
@@ -120,6 +130,12 @@ void dumpToFile(FILE* outfile, symbol* sym, astree* root){
   string attrs = getAttr(sym);
   for(size_t i = 0; i < sym->block_nr; i++){
     spaces += "   ";
+  }
+  if(sym->attributes[ATTR_typeid]==1){
+    fprintf(outfile, "%s %s (%zu.%zu.%zu) %s\n", spaces.c_str(),
+            root->lexinfo->c_str(),sym->filenr, sym->linenr, sym->offset,
+            attrs.c_str());
+    return;
   }
   fprintf(outfile, "%s %s (%zu.%zu.%zu) {%zu} %s\n", spaces.c_str(),
           root->lexinfo->c_str(),sym->filenr, sym->linenr, sym->offset,
@@ -530,6 +546,35 @@ void traverseAstree(astree* root){
       }
       case TOK_STRUCT:
       {
+        astree *temp = root->children[a];
+        symbol *newSym = create_symbol(temp);
+        newSym->attributes.set(ATTR_struct);
+        newSym->attributes.set(ATTR_typeid);
+        newSym->typeid = temp->children[0]->lexinfo;
+        newSym->fields = new symbol_table();
+        for(size_t i = 1; i<root->children[a].size();i++){
+          symbol *tempSym = create_symbol(temp->children[i]->
+                                                children[0]);
+          tempSym->attributes.set(TOK_FIELD);
+          switch(temp->children[i]->symbol){
+            case TOK_INT:
+              tempSym->attributes.set(ATTR_int);
+              break;
+            case TOK_CHAR:
+              tempSym->attributes.set(ATTR_char);
+              break;
+            case TOK_BOOL:
+              tempSym->attributes.set(ATTR_bool);
+              break;
+            case TOK_STRING:
+              tempSym->attributes.set(ATTR_string);
+              break;
+            case TOK_TYPEID:
+              tempSym->attributes.set(ATTR_typeid);
+              break;
+          }
+        }
+
         break;
       }
       case TOK_CALL:

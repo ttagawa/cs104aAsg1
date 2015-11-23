@@ -23,6 +23,7 @@ using symbol_entry = symbol_table::value_type;
 struct symbol {
   attr_bitset attributes;
   symbol_table* fields;
+  string typeid;
   size_t filenr;
   size_t linenr;
   size_t offset;
