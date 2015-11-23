@@ -36,7 +36,13 @@ void traverseFunc(astree* root, int symbol);
 
 bool typechkArr(astree* n, astree* n1);
 
+void checkCall(astree* curr);
+
+void checkDecl(astree* root);
+
 void dumpToFile(FILE* outfile, symbol* sym, astree* root);
+
+void dumpParams(symbol* sym, astree* root);
 
 void insertArr(astree* node, astree* node1);
 

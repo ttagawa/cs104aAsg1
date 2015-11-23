@@ -30,6 +30,7 @@ bool lookup(const string* x){
     symbol_table* pos = *i;
     auto result = pos->find(x);
     if(result!=pos->cend()) return true;
+
   }
   return false;
 }
@@ -57,6 +58,7 @@ int getIdentReturn(symbol* sym){
   else if (tok == "char") return TOK_CHARCON;
   else if (tok == "string") return TOK_STRINGCON;
   else if (tok == "bool") return TOK_BOOL;
+  //should be changed to return typeid
   else if (tok == "struct") return TOK_STRUCT;
   return 0;
 }
@@ -98,7 +100,10 @@ int getReturnType(astree* root){
     case TOK_NEWSTRING:
       return TOK_NEWSTRING;
       break;
-
+    case TOK_CALL:
+      checkCall(root);
+      return getReturnType(root->children[0]);
+      break;
   }
 }
 
@@ -121,10 +126,26 @@ void dumpToFile(FILE* outfile, symbol* sym, astree* root){
                     sym->block_nr, attrs.c_str());
 }
 
+void dumpParams(symbol* sym, astree* root){
+  for(size_t i = 0;i<sym->parameters->size();i++){
+    symbol* param = sym->parameters->at(i);
+    if(symbol_stack.back() == nullptr || symbol_stack.empty()){
+      symbol_table* tab = new symbol_table();
+      tab->insert(symbol_entry(root->children[i]->children[0]->
+                                            lexinfo,param));
+      symbol_stack.pop_back();
+      symbol_stack.push_back(tab);
+    }else{
+      symbol_stack.back()->insert(symbol_entry(root->children[i]->
+                                  children[0]->lexinfo,param));
+    }
+    dumpToFile(file_sym, param, root->children[i]->children[0]);
+  }
+  fprintf(file_sym, "\n");
+}
+
 void insertArr(astree* node, astree* node1){
-    printf("first\n");
     if(typechkArr(node, node1)){
-      printf("second\n");
       int arrSym = node->symbol;
       switch (arrSym){
         case TOK_INT:
@@ -142,9 +163,9 @@ void insertArr(astree* node, astree* node1){
           }else{
             symbol_stack.back()->insert(symbol_entry(node->children[1]->
                                                   lexinfo,newSym));
-        }
-        dumpToFile(file_sym, newSym, node->children[1]);
-        break;
+          }
+          dumpToFile(file_sym, newSym, node->children[1]);
+          break;
         }
         case TOK_CHAR:
         {
@@ -192,7 +213,6 @@ void insertArr(astree* node, astree* node1){
 bool typechkArr ( astree* node, astree* node1){
   int right2 = getReturnType(node1->children[1]);
   int right1 = getReturnType(node1->children[0]);
-  printf("%s r1, %s r2\n", get_yytname(right1), get_yytname(right2));
   if(right2!=TOK_INTCON){
     errprintf("%zu.%zu.%zu Array size allocator not of type int.\n",
     node1->children[1]->filenr, node1->children[1]->linenr,
@@ -209,6 +229,41 @@ bool typechkArr ( astree* node, astree* node1){
   }
 }
 
+void checkCall(astree* curr){
+  if(lookup(curr->children[0]->lexinfo)){
+    symbol *fnSym = lookupSym(curr->children[0]->lexinfo);
+    if(curr->children.size()-1!=fnSym->parameters->size()){
+      errprintf("%zu.%zu.%zu Parameters of defined function"
+      " do not match\n",
+      curr->children[0]->filenr,curr->children[0]->linenr,
+      curr->children[0]->offset);
+    }else{
+      for(size_t i = 0;i<fnSym->parameters->size();i++){
+        int paramType = getIdentReturn(fnSym->parameters->at(i));
+        int callParam = getReturnType(curr->children[i+1]);
+        if(paramType!=callParam){
+          errprintf("%zu.%zu.%zu Argument type does not match"
+          " defined function argument type.\n",curr->
+          children[i+1]->filenr,curr->children[i+1]->
+          linenr,curr->children[i+1]->offset);
+        }
+      }
+    }
+  }else{
+    errprintf("%zu.%zu.%zu Function not defined\n",
+    curr->children[0]->filenr,curr->children[0]->linenr,
+    curr->children[0]->offset);
+  }
+}
+
+void checkDecl(astree* root){
+  astree* node = root->children[0];
+  if(lookup(node->lexinfo)){
+    errprintf("%zu.%zu.%zu Error: Redeclaration of variable %s\n"
+    ,node->filenr,node->linenr,node->offset, node->lexinfo->c_str());
+  }
+}
+
 void travVardecl(astree* root){
   astree* node = root->children[0];
   astree* node1 = root->children[1];
@@ -216,6 +271,7 @@ void travVardecl(astree* root){
   int otherSym = getReturnType(node1);
   switch(sym){
     case TOK_INT:
+      checkDecl(node);
       if(otherSym==TOK_INTCON){
         symbol *newSym = create_symbol(node->children[0]);
         newSym->attributes.set(ATTR_int);
@@ -237,6 +293,7 @@ void travVardecl(astree* root){
       break;
 
     case TOK_CHAR:
+      checkDecl(node);
       if(otherSym==TOK_CHARCON){
         symbol *newSym = create_symbol(node->children[0]);
         newSym->attributes.set(ATTR_char);
@@ -258,6 +315,7 @@ void travVardecl(astree* root){
       break;
 
     case TOK_BOOL:
+      checkDecl(node);
       if(otherSym==TOK_TRUE || otherSym==TOK_FALSE){
         symbol *newSym = create_symbol(node->children[0]);
         newSym->attributes.set(ATTR_bool);
@@ -278,6 +336,7 @@ void travVardecl(astree* root){
       }
       break;
     case TOK_STRING:
+      checkDecl(node);
       if(otherSym == TOK_NEWSTRING){
         if(node1->children[0]->symbol == TOK_INTCON){
           symbol *newSym = create_symbol(node->children[0]);
@@ -315,6 +374,7 @@ void travVardecl(astree* root){
         }
         dumpToFile(file_sym, newSym, node->children[0]);
       }
+      break;
     }
 }
 
@@ -391,7 +451,9 @@ void traverseAstree(astree* root){
         symbol_stack.pop_back();
         break;
       case TOK_FUNCTION:
+      {
         symbol* newFunc = create_symbol(root->children[a]);
+        blockcount++;
         newFunc->attributes.set(ATTR_function);
         switch(curr->children[0]->symbol){
           case TOK_INT:
@@ -407,8 +469,8 @@ void traverseAstree(astree* root){
             newFunc->attributes.set(ATTR_bool);
             break;
         }
-
-        for(size_t i = 0; i<curr->children.size(); i++){
+        newFunc->parameters = new vector<symbol*>;
+        for(size_t i = 0; i<curr->children[1]->children.size(); i++){
           astree* param_node = curr->children[1]->children[i];
           symbol* param = create_symbol(param_node->children[0]);
           param->attributes.set(ATTR_variable);
@@ -429,7 +491,6 @@ void traverseAstree(astree* root){
               param->attributes.set(ATTR_bool);
               break;
           }
-          newFunc->parameters = new vector<symbol*>;
           newFunc->parameters->push_back(param);
         }
         if(symbol_stack.back() == nullptr || symbol_stack.empty()){
@@ -444,7 +505,9 @@ void traverseAstree(astree* root){
         }
         dumpToFile(file_sym, newFunc, curr->children[0]->children[0]);
         symbol_stack.push_back(nullptr);
-        blockcount++;
+        if (curr->children[1]->children.size() != 0){
+           dumpParams(newFunc, curr->children[1]);
+        }
         int funcSym;
         switch (curr->children[0]->symbol){
           case TOK_INT:
@@ -463,6 +526,15 @@ void traverseAstree(astree* root){
         traverseFunc(curr->children[2], funcSym);
         blockcount--;
         symbol_stack.pop_back();
+        break;
+      }
+      case TOK_STRUCT:
+      {
+        break;
+      }
+      case TOK_CALL:
+        checkCall(curr);
+        break;
     }
   }
 }
@@ -504,6 +576,9 @@ void traverseFunc(astree* root, int symbol){
           "function (%s)\n", curr->filenr, curr->linenr,
           curr->offset, tname);
         }
+        break;
+      case TOK_CALL:
+        checkCall(curr);
         break;
     }
   }

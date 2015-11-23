@@ -27,6 +27,8 @@ astree* adopt2 (astree* root, astree* left, astree* right);
 // Append three children to the vector of children.
 astree* adopt3 (astree* root, astree* c1, astree* c2, astree* c3);
 
+astree* appendAdopt(astree* parent, astree* child);
+
 //Create new root node and append three children.
 astree* funcCheck (astree* root, astree* param, astree* child);
 

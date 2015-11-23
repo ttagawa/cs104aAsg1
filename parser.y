@@ -46,8 +46,9 @@ program : program structdef   { $$ = adopt1($1,$2); }
         |                     { $$ = new_parseroot(); }
         ;
 
+
 structdef   : TOK_STRUCT TOK_IDENT '{' fields '}'
-              { $$ = adopt2($1,$2,$4);
+              { $$ = adopt1($1,$2);$$=appendAdopt($1,$4);
               $2->symbol=TOK_TYPEID;free_ast2($3,$5);}
             | TOK_STRUCT TOK_IDENT '{' '}'
               {$$ = adopt1($1,$2); free_ast2($3,$4);}
@@ -55,7 +56,9 @@ structdef   : TOK_STRUCT TOK_IDENT '{' fields '}'
 
 fields      : fields fielddec ';'
               {$2->symbol=TOK_TYPEID; $$=adopt1($1,$2);}
-            | fielddec ';'       {$$=$1;free_ast($2);}
+            | fielddec ';'
+            {$$=new astree(TOK_PARAM,$1->filenr,$1->linenr,$1->
+            offset,"");$$=adopt1($$,$1);free_ast($2);}
             ;
 
 fielddec    : basetype TOK_ARRAY TOK_IDENT

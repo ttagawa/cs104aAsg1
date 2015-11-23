@@ -40,6 +40,12 @@ astree* adopt3 (astree* root, astree* c1, astree* c2, astree* c3){
   return root;
 }
 
+astree* appendAdopt(astree* parent, astree* child){
+  parent->children.insert(parent->children.end(),
+  child->children.begin(),child->children.end());
+  return parent;
+}
+
 astree* funcCheck (astree* root, astree* param, astree *child){
   astree* node;
   if(child->symbol == (int)';'){
