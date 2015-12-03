@@ -1,5 +1,7 @@
 %{
 // Dummy parser for scanner project.
+//John King joscking
+//Tyler Tagawa ttagawa
 #include <assert.h>
 #include "lyutils.h"
 #include "astree.h"
@@ -84,9 +86,9 @@ function    : identdecl params ')' block
 params      : '('
               {$1->symbol=TOK_PARAM; $$=$1;}
             | params ',' identdecl
-              {adopt1($1,$3); free_ast($2);}
+              {$$=adopt1($1,$3); free_ast($2);}
             | params identdecl
-              {adopt1($1,$2);}
+              {$$=adopt1($1,$2);}
             ;
 
 identdecl   : basetype TOK_ARRAY TOK_IDENT

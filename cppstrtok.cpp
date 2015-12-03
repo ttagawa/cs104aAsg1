@@ -1,7 +1,8 @@
 // Use cpp to scan a file and print line numbers.
 // Print out each input line read in, then strtok it for
 // tokens.
-
+//John King joscking
+//Tyler Tagawa ttagawa 
 #include <string>
 using namespace std;
 

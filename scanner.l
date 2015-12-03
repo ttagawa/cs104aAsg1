@@ -1,5 +1,6 @@
 /* $Id: lexer.l,v 1.3 2015-07-09 14:08:58-07 - - $ */
-
+/*John King joscking
+Tyler Tagawa ttagawa */
 %{
 #include "auxlib.h"
 #include "lyutils.h"

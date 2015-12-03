@@ -1,5 +1,6 @@
 // $Id: auxlib.cpp,v 1.3 2015-10-01 18:15:04-07 - - $
-
+//John King joscking
+//Tyler Tagawa ttagawa 
 #include <assert.h>
 #include <errno.h>
 #include <libgen.h>

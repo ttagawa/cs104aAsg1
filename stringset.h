@@ -1,3 +1,5 @@
+//John King joscking
+//Tyler Tagawa ttagawa 
 #ifndef STRINGSET
 #define STRINGSET
 

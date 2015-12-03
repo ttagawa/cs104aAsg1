@@ -1,14 +1,16 @@
+//John King joscking
+//Tyler Tagawa ttagawa 
 #ifndef __LYUTILS_H__
 #define __LYUTILS_H__
 
 // Lex and Yacc interface utility.
 
 #include <stdio.h>
-
 #include "astree.h"
 #include "auxlib.h"
 
 #define YYEOF 0
+
 
 extern FILE* yyin;
 extern astree* yyparse_astree;

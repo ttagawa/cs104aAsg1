@@ -1,13 +1,25 @@
+//John King joscking
+//Tyler Tagawa ttagawa 
 #ifndef __ASTREE_H__
 #define __ASTREE_H__
 
 #include <string>
 #include <vector>
+#include <bitset>
 using namespace std;
 
 #include "auxlib.h"
 
+enum { ATTR_void, ATTR_bool, ATTR_char, ATTR_int, ATTR_null,
+     ATTR_string, ATTR_struct, ATTR_array, ATTR_function,
+     ATTR_variable, ATTR_field, ATTR_typeid, ATTR_param, ATTR_lval,
+     ATTR_const, ATTR_vreg, ATTR_vaddr, ATTR_bitset_size
+   };
+
+using attr_bitset1 = bitset<ATTR_bitset_size>;
+
 struct astree {
+   attr_bitset1 attribs;
    int symbol;               // token code
    size_t filenr;            // index into filename stack
    size_t linenr;            // line number from source code
@@ -16,8 +28,10 @@ struct astree {
    vector<astree*> children; // children of this n-way node
    astree (int symbol, int filenr, int linenr,
            int offset, const char* clexinfo);
+
 };
 
+string getAttrs(astree* root);
 // Append one child to the vector of children.
 astree* adopt1 (astree* root, astree* child);
 

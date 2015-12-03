@@ -1,5 +1,6 @@
 // $Id: auxlib.h,v 1.2 2015-10-01 18:15:04-07 - - $
-
+//John King joscking
+//Tyler Tagawa ttagawa 
 #ifndef __AUXLIB_H__
 #define __AUXLIB_H__
 

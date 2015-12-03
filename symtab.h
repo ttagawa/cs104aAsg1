@@ -1,3 +1,5 @@
+//John King joscking
+//Tyler Tagawa ttagawa
 #ifndef __SYMTAB_H__
 #define __SYMTAB_H__
 
@@ -9,11 +11,7 @@
 
 using namespace std;
 
-enum { ATTR_void, ATTR_bool, ATTR_char, ATTR_int, ATTR_null,
-      ATTR_string, ATTR_struct, ATTR_array, ATTR_function,
-      ATTR_variable, ATTR_field, ATTR_typeid, ATTR_param, ATTR_lval,
-      ATTR_const, ATTR_vreg, ATTR_vaddr, ATTR_bitset_size
-    };
+
 
 struct symbol;
 using attr_bitset = bitset<ATTR_bitset_size>;
@@ -23,7 +21,7 @@ using symbol_entry = symbol_table::value_type;
 struct symbol {
   attr_bitset attributes;
   symbol_table* fields;
-  string typeid;
+  string type_id;
   size_t filenr;
   size_t linenr;
   size_t offset;
@@ -45,13 +43,17 @@ void dumpToFile(FILE* outfile, symbol* sym, astree* root);
 
 void dumpParams(symbol* sym, astree* root);
 
+void dumpFields(symbol* sym, astree* root);
+
 void insertArr(astree* node, astree* node1);
 
 symbol *create_symbol (astree *sym_node);
 
-bool lookup(const string* x, astree* node);
+bool lookup(const string* x);
 
 symbol* lookupSym(const string* x);
+
+symbol* lookupFields(const string* x,symbol_table* tab);
 
 int getIdentReturn(symbol* sym);
 
