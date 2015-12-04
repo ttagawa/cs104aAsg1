@@ -52,11 +52,24 @@ void dumpStruct(astree* root){
 
 void dumpStrincons(){
   for(size_t i=0;i<strvec.size();i++){
-    fprintf(file_oil, "char* s%zu = %s\n",i+1,strvec.at(i)->c_str());
+    fprintf(file_oil, "char* s%zu = %s;\n",i+1,strvec.at(i)->c_str());
+  }
+}
+
+void dumpGlobalVars(astree* root){
+  for(size_t i = 0;i<root->children.size();i++){
+    astree* curr = root->children[i];
+    int sym = curr->symbol;
+    if(sym == TOK_VARDECL){
+      fprintf(file_oil, "%s __%s;\n",
+      getStrType(curr->children[0]).c_str(),
+      curr->children[0]->children[0]->lexinfo->c_str() );
+    }
   }
 }
 
 void makeOil(astree* root){
   dumpStruct(root);
   dumpStrincons();
+  dumpGlobalVars(root);
 }

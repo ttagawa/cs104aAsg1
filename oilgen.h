@@ -6,6 +6,7 @@
 string getStrType(astree* curr);
 void dumpStruct(astree* root);
 void dumpStrincons();
+void dumpGlobalVars(astree* root);
 void makeOil(astree* root);
 
 #endif
