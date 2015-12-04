@@ -68,8 +68,41 @@ void dumpGlobalVars(astree* root){
   }
 }
 
+void dumpFunction(astree* root){
+  for(size_t i = 0;i<root->children.size();i++){
+    astree* curr = root->children[i];
+    int sym = curr->symbol;
+    if(sym == TOK_FUNCTION){
+      fprintf(file_oil, "%s __%s (",
+      getStrType(curr->children[0]).c_str(),
+      curr->children[0]->children[0]->lexinfo->c_str());
+      if(curr->children[1]->children.size()==0){
+        fprintf(file_oil,")\n");
+      }else{
+        symbol* func = lookupSym(curr->children[0]->
+                                children[0]->lexinfo);
+        vector<symbol*> temp = *(func->parameters);
+        for(size_t j = 0; j<temp.size();j++){
+          symbol* tempSym = temp[j];
+          string output = getStrType(curr->children[1]->children[j]);
+          int blocknum = static_cast<int>(tempSym->block_nr);
+          output+="_"+to_string(blocknum)+"_";
+          output+=*(curr->children[1]->children[j]->
+                                children[0]->lexinfo);
+          if(j==temp.size()-1){
+            fprintf(file_oil, "\n\t%s)\n",output.c_str());
+          }else{
+            fprintf(file_oil, "\n\t%s,",output.c_str());
+          }
+        }
+      }
+    }
+  }
+}
+
 void makeOil(astree* root){
   dumpStruct(root);
   dumpStrincons();
   dumpGlobalVars(root);
+  dumpFunction(root);
 }
