@@ -2,9 +2,10 @@
 //Tyler Tagawa ttagawa
 #ifndef __OILGEN_H__
 #define __OILGEN_H__
-#include "astree.h"
 
+string getStrType(astree* curr);
 void dumpStruct(astree* root);
+void dumpStrincons();
 void makeOil(astree* root);
 
 #endif

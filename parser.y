@@ -57,7 +57,7 @@ structdef   : TOK_STRUCT TOK_IDENT '{' fields '}'
             ;
 
 fields      : fields fielddec ';'
-              {$2->symbol=TOK_TYPEID; $$=adopt1($1,$2);}
+              { $$=adopt1($1,$2);}
             | fielddec ';'
             {$$=new astree(TOK_PARAM,$1->filenr,$1->linenr,$1->
             offset,"");$$=adopt1($$,$1);free_ast($2);}

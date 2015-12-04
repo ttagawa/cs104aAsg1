@@ -18,9 +18,9 @@ using namespace std;
 #include <iostream>
 #include "auxlib.h"
 #include "stringset.h"
-#include "lyutils.h"
 #include "symtab.h"
 #include "oilgen.h"
+#include "lyutils.h"
 FILE* file_tok;
 FILE* file_ast;
 FILE* file_sym;

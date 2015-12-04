@@ -1,8 +1,8 @@
 //John King joscking
 //Tyler Tagawa ttagawa
-#include "symtab.h"
 #include <string.h>
 #include "lyutils.h"
+#include "symtab.h"
 size_t blockcount = 0;
 vector<string> attrArray { "void", "bool", "char", "int", "null",
       "string", "struct", "array", "function",
@@ -11,6 +11,7 @@ vector<string> attrArray { "void", "bool", "char", "int", "null",
     };
 
 vector<symbol_table*> symbol_stack;
+vector<const string*> strvec;
 int flag = 0;
 
 symbol *create_symbol (astree *sym_node){
@@ -484,6 +485,8 @@ void travVardecl(astree* root){
           node1->children[1]->offset);
         }
       }else if (otherSym == TOK_STRINGCON || otherSym==TOK_NULL){
+        if(otherSym!=TOK_NULL)
+          strvec.push_back(node1->lexinfo);
         symbol *newSym = create_symbol(node->children[0]);
         newSym->attributes.set(ATTR_string);
         newSym->attributes.set(ATTR_lval);

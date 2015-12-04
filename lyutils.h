@@ -19,7 +19,7 @@ extern char* yytext;
 extern int yy_flex_debug;
 extern int yydebug;
 extern int yyleng;
-extern vector<string> strvec;
+extern vector<const string*> strvec;
 extern FILE* file_tok;
 extern FILE* file_ast;
 extern FILE* file_sym;
