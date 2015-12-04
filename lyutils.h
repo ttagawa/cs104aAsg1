@@ -1,5 +1,5 @@
 //John King joscking
-//Tyler Tagawa ttagawa 
+//Tyler Tagawa ttagawa
 #ifndef __LYUTILS_H__
 #define __LYUTILS_H__
 
@@ -19,9 +19,11 @@ extern char* yytext;
 extern int yy_flex_debug;
 extern int yydebug;
 extern int yyleng;
+extern vector<string> strvec;
 extern FILE* file_tok;
 extern FILE* file_ast;
 extern FILE* file_sym;
+extern FILE* file_oil;
 
 int yylex (void);
 int yyparse (void);

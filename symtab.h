@@ -17,7 +17,7 @@ struct symbol;
 using attr_bitset = bitset<ATTR_bitset_size>;
 using symbol_table = unordered_map<const string*,symbol*>;
 using symbol_entry = symbol_table::value_type;
-
+extern vector<symbol_table*> symbol_stack;
 struct symbol {
   attr_bitset attributes;
   symbol_table* fields;

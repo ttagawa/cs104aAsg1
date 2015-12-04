@@ -1,6 +1,6 @@
 # $Id: Makefile,v 1.12 2015-07-09 18:41:17-07 - - $
 #John King joscking
-#Tyler Tagawa ttagawa 
+#Tyler Tagawa ttagawa
 DEPSFILE  = Makefile.deps
 NOINCLUDE = ci clean spotless
 NEEDINCL  = ${filter ${NOINCLUDE}, ${MAKECMDGOALS}}
@@ -10,7 +10,7 @@ GRIND     = valgrind --leak-check=full --show-reachable=yes
 FLEX      = flex --header-file=${LEXHDR} --outfile=${LEXCPP}
 BISON     = bison --defines=${PARSEHDR} --output=${PARSECPP}
 
-MODULES   = astree lyutils stringset auxlib symtab
+MODULES   = astree lyutils stringset auxlib symtab oilgen
 HDRSRC    = ${MODULES:=.h}
 CPPSRC    = ${MODULES:=.cpp} cppstrtok.cpp
 FLEXSRC   = scanner.l

@@ -2,7 +2,7 @@
 // Print out each input line read in, then strtok it for
 // tokens.
 //John King joscking
-//Tyler Tagawa ttagawa 
+//Tyler Tagawa ttagawa
 #include <string>
 using namespace std;
 
@@ -20,9 +20,11 @@ using namespace std;
 #include "stringset.h"
 #include "lyutils.h"
 #include "symtab.h"
+#include "oilgen.h"
 FILE* file_tok;
 FILE* file_ast;
 FILE* file_sym;
+FILE* file_oil;
 string CPP = "/usr/bin/cpp";
 const size_t LINESIZE = 1024;
 int parsecode = 0;
@@ -93,6 +95,7 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
   char* final_tok = new char[base.length() + 5];
   char* final_ast = new char[base.length() + 5];
   char* final_sym = new char[base.length() + 5];
+  char* final_oil = new char[base.length() + 5];
   strcpy(final_str,base.c_str());
   strcat(final_str,".str");
   strcpy(final_tok,base.c_str());
@@ -101,6 +104,8 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
   strcat(final_ast,".ast");
   strcpy(final_sym,base.c_str());
   strcat(final_sym,".sym");
+  strcpy(final_oil,base.c_str());
+  strcat(final_oil,".oil");
   ofstream file_str(final_str);
     //  ofstream file_tok(final_tok);
       yyin = popen (command.c_str(), "r");
@@ -116,15 +121,21 @@ while((c = getopt (argc,argv,"ly@:D:"))!=-1){
    }
    file_ast = fopen(final_ast, "w");
    file_sym = fopen(final_sym,"w");
+   file_oil = fopen(final_oil,"w");
    traverseAstree(yyparse_astree);
    dump_stringset(file_str);
    dump_astree(file_ast, yyparse_astree);
+   makeOil(yyparse_astree);
    file_str.close();
    fclose(file_tok);
    fclose(file_ast);
+   fclose(file_sym);
+   fclose(file_oil);
    delete [] final_str;
    delete [] final_tok;
    delete [] final_ast;
+   delete [] final_sym;
+   delete [] final_oil;
    pclose(yyin);
    yylex_destroy();
    return get_exitstatus();
