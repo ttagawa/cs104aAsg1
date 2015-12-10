@@ -250,6 +250,7 @@ void insertArr(astree* node, astree* node1){
         case TOK_INT:
         {
           symbol *newSym = create_symbol(node->children[1]);
+
           newSym->attributes.set(ATTR_int);
           newSym->attributes.set(ATTR_array);
           newSym->attributes.set(ATTR_lval);
@@ -389,6 +390,7 @@ void checkDecl(astree* root){
 void travVardecl(astree* root){
   astree* node = root->children[0];
   astree* node1 = root->children[1];
+  root->block = blockcount;
   int sym = node->symbol;
   int otherSym = getReturnType(node1);
   switch(sym){
@@ -573,6 +575,7 @@ void travVardecl(astree* root){
 
 void travCompare(astree* root){
   int sym = root->symbol;
+  root->block = blockcount;
   int left = getReturnType(root->children[0]);
   int right = getReturnType(root->children[1]);
   switch (sym){
@@ -619,7 +622,7 @@ void traverseAstree(astree* root){
     int sym = root->children[a]->symbol;
     astree* curr = root->children[a];
     switch(sym){
-      case TOK_VARDECL:
+      case TOK_VARDECL: case '=':
         travVardecl(curr);
         break;
       case TOK_IF: case TOK_WHILE:
@@ -642,6 +645,7 @@ void traverseAstree(astree* root){
         break;
       case TOK_FUNCTION:
       {
+        root->children[a]->children[1]->block = blockcount+1;
         symbol* newFunc = create_symbol(root->children[a]);
         blockcount++;
         newFunc->attributes.set(ATTR_function);
@@ -861,7 +865,7 @@ void traverseFunc(astree* root, int symbol){
     int sym = root->children[a]->symbol;
     astree* curr = root->children[a];
     switch(sym){
-      case TOK_VARDECL:
+      case TOK_VARDECL: case '=':
         travVardecl(curr);
         break;
       case TOK_IF: case TOK_WHILE:

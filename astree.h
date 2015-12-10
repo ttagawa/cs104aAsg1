@@ -1,5 +1,5 @@
 //John King joscking
-//Tyler Tagawa ttagawa 
+//Tyler Tagawa ttagawa
 #ifndef __ASTREE_H__
 #define __ASTREE_H__
 
@@ -20,6 +20,7 @@ using attr_bitset1 = bitset<ATTR_bitset_size>;
 
 struct astree {
    attr_bitset1 attribs;
+   size_t block;
    int symbol;               // token code
    size_t filenr;            // index into filename stack
    size_t linenr;            // line number from source code
